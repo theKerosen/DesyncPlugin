@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Change these to match your project setup in IntelliJ -->
+    <groupId>org.ladyluh.desync</groupId>
+    <artifactId>Desync</artifactId>
+    <version>0.1.0</version>
+    <packaging>jar</packaging>
+
+    <name>Desync</name>
+    <description>Creates unsettling atmospheric and psychological horror events.</description>
+    <!-- Optional: Add URL to project repository if you use Git -->
+    <!-- <url>https://github.com/yourusername/Desync</url> -->
+
+    <properties>
+        <!-- Set your Java version (17+ for modern MC) -->
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Set Paper API version matching your server JAR -->
+        <!-- Find versions here: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/ -->
+        <paper.api.version>1.20.4-R0.1-SNAPSHOT</paper.api.version>
+        <!-- Set ProtocolLib version matching your server version -->
+        <!-- Find versions here: https://www.spigotmc.org/resources/protocollib.1997/history -->
+        <protocollib.version>5.1.0</protocollib.version>
+        <!-- Set path to your test server's plugins folder (ABSOLUTE PATH) -->
+        <server.plugins.dir>/home/luna/minecraft_test_server/plugins</server.plugins.dir>
+    </properties>
+
+    <repositories>
+        <!-- Paper Repository -->
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+        <!-- ProtocolLib Repository -->
+        <repository>
+            <id>dmulloy2-repo</id>
+            <url>https://repo.dmulloy2.net/repository/public/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- Paper API -->
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper.api.version}</version>
+            <!-- Scope 'provided' means the server already has this, don't bundle it -->
+            <scope>provided</scope>
+        </dependency>
+        <!-- ProtocolLib API -->
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>${protocollib.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+        <plugins>
+            <!-- Java Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version> <!-- Use a recent version -->
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <!-- JAR Plugin - Configured to output directly to server -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version> <!-- Use a recent version -->
+                <configuration>
+                    <!-- Define the output directory for the final JAR -->
+                    <outputDirectory>${server.plugins.dir}</outputDirectory>
+                    <!-- Optional: Define final JAR name if needed, default is artifactId-version.jar -->
+                    <!-- <finalName>${project.artifactId}</finalName> -->
+                </configuration>
+            </plugin>
+            <!-- Optional: Shade Plugin (Uncomment if you later add libraries that ARE NOT provided by server/ProtocolLib) -->
+            <!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.example.library</pattern>
+                                    <shadedPattern>org.ladyluh.desync.libs.com.example.library</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
+        </plugins>
+        <!-- Resource Filtering (Not needed if using Paper Manifest annotations) -->
+        <!-- If you were using plugin.yml, you'd enable filtering here -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>

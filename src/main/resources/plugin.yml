@@ -1,0 +1,26 @@
+name: Desync
+main: org.ladyluh.desync.Desync
+version: ${project.version}
+api-version: '1.20' # Or your target 1.20.x version
+author: Luna
+description: Creates unsettling atmospheric and psychological horror events.
+depend:
+  - ProtocolLib
+
+commands:
+  desync:
+    description: Base command for Desync plugin features and debugging.
+    usage: /<command> <subcommand> [options] # More generic usage
+    aliases: [ds]
+    permission: desync.command # Base permission to use /ds at all
+# You'll still need to define the specific permissions for ops/players
+# permissions:
+#   desync.command:
+#     description: Allows use of base /ds command.
+#     default: op
+#   desync.command.trigger:
+#     description: Allows triggering events.
+#     default: op
+#   desync.command.cooldown:
+#     description: Allows clearing cooldowns.
+#     default: op
