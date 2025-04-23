@@ -109,9 +109,7 @@ public final class Desync extends JavaPlugin {
                 eventScheduler.stop();
             }
 
-            if (Bukkit.getScheduler() != null) {
-                Bukkit.getScheduler().cancelTasks(this);
-            }
+            Bukkit.getScheduler().cancelTasks(this);
         } catch (Exception e) {
             logger.error("Error cancelling tasks during disable", e);
         }

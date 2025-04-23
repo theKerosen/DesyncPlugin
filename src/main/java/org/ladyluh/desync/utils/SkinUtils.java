@@ -127,7 +127,7 @@ public class SkinUtils {
     @Nullable
     private static WrappedGameProfile getProfileWithProperties(@NotNull UUID uuid, @NotNull Logger logger) {
         try {
-            URL url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString() + "?unsigned=false");
+            URL url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(5000);
@@ -197,7 +197,7 @@ public class SkinUtils {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         UUID stalkerUUID = UUID.randomUUID();
 
-        Player skinSource = null;
+        Player skinSource;
         List<Player> candidates = Bukkit.getOnlinePlayers().stream()
                 .filter(p -> !p.equals(targetPlayer))
                 .collect(Collectors.toList());

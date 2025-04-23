@@ -226,7 +226,7 @@ public class DesyncCommand implements CommandExecutor {
         sender.sendMessage(ChatColor.GOLD + "--- Desync Plugin Info ---");
         sender.sendMessage(ChatColor.YELLOW + "Version: " + plugin.getDescription().getVersion());
         // Safely get authors, display multiple if present
-        if (plugin.getDescription().getAuthors() != null && !plugin.getDescription().getAuthors().isEmpty()) {
+        if (!plugin.getDescription().getAuthors().isEmpty()) {
             sender.sendMessage(ChatColor.YELLOW + "Author(s): " + String.join(", ", plugin.getDescription().getAuthors()));
         } else {
             sender.sendMessage(ChatColor.YELLOW + "Author(s): Unknown");
