@@ -22,7 +22,6 @@ public class EventScheduler implements Runnable {
     private final Desync plugin;
     private final EventService eventService;
     private final CooldownManager cooldownManager;
-    private ConfigurationManager configManager;
     private BukkitTask task;
 
 
@@ -50,7 +49,7 @@ public class EventScheduler implements Runnable {
      * Called by ConfigurationManager after config is loaded or reloaded.
      */
     public void reloadSettings() {
-        this.configManager = plugin.getConfigurationManager();
+        ConfigurationManager configManager = plugin.getConfigurationManager();
 
 
         this.schedulerIntervalTicks = configManager.getSchedulerIntervalTicks();
@@ -109,7 +108,7 @@ public class EventScheduler implements Runnable {
     @Override
     public void run() {
 
-        if (cooldownManager == null || eventService == null || configManager == null) {
+        if (plugin.getCooldownManager() == null || plugin.getEventService() == null || plugin.getConfigurationManager() == null) {
             plugin.getPluginLogger().error("Manager or Service is null in EventScheduler run()!");
             stop();
             return;
