@@ -5,13 +5,16 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 import org.ladyluh.desync.Desync;
 import org.ladyluh.desync.events.EventService;
+import org.ladyluh.desync.managers.ConfigurationManager;
+import org.ladyluh.desync.managers.CooldownManager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
-import org.ladyluh.desync.managers.CooldownManager;
 
 
 public class EventScheduler implements Runnable {
@@ -19,21 +22,64 @@ public class EventScheduler implements Runnable {
     private final Desync plugin;
     private final EventService eventService;
     private final CooldownManager cooldownManager;
+    private ConfigurationManager configManager;
     private BukkitTask task;
 
 
-    private static final long TASK_INTERVAL_TICKS = 20L * 5;
-    private static final double BASE_EVENT_PROBABILITY = 0.02;
+    private long schedulerIntervalTicks;
+    private double baseEventProbability;
+    private double chanceMultiplierDarkness;
+    private double chanceMultiplierDimness;
+    private double chanceMultiplierUndergroundDeep;
+    private double chanceMultiplierUndergroundShallow;
+    private double chanceMultiplierIsolated;
+    private double chanceMultiplierNight;
+    private double chanceMultiplierNether;
+    private double chanceMultiplierEnd;
+    private double maxCalculatedChance;
 
 
-    public EventScheduler(Desync plugin, EventService eventService) {
+    public EventScheduler(@NotNull Desync plugin, @NotNull EventService eventService) {
         this.plugin = plugin;
         this.eventService = eventService;
         this.cooldownManager = plugin.getCooldownManager();
+
     }
 
     /**
+     * Called by ConfigurationManager after config is loaded or reloaded.
+     */
+    public void reloadSettings() {
+        this.configManager = plugin.getConfigurationManager();
+
+
+        this.schedulerIntervalTicks = configManager.getSchedulerIntervalTicks();
+        this.baseEventProbability = configManager.getBaseEventProbability();
+        this.chanceMultiplierDarkness = configManager.getChanceMultiplierDarkness();
+        this.chanceMultiplierDimness = configManager.getChanceMultiplierDimness();
+        this.chanceMultiplierUndergroundDeep = configManager.getChanceMultiplierUndergroundDeep();
+        this.chanceMultiplierUndergroundShallow = configManager.getChanceMultiplierUndergroundShallow();
+        this.chanceMultiplierIsolated = configManager.getChanceMultiplierIsolated();
+        this.chanceMultiplierNight = configManager.getChanceMultiplierNight();
+        this.chanceMultiplierNether = configManager.getChanceMultiplierNether();
+        this.chanceMultiplierEnd = configManager.getChanceMultiplierEnd();
+        this.maxCalculatedChance = configManager.getMaxCalculatedChance();
+
+        plugin.getPluginLogger().debug("EventScheduler settings reloaded. Interval: {}t, BaseChance: {}", schedulerIntervalTicks, baseEventProbability);
+
+
+        if (task != null && !task.isCancelled()) {
+            plugin.getPluginLogger().info("Scheduler interval changed, restarting task.");
+            task.cancel();
+            start();
+        }
+
+    }
+
+
+    /**
      * Starts the main event scheduling task.
+     * Uses the currently configured interval.
      */
     public void start() {
         if (task != null && !task.isCancelled()) {
@@ -41,8 +87,9 @@ public class EventScheduler implements Runnable {
             return;
         }
 
-        task = Bukkit.getScheduler().runTaskTimer(plugin, this, TASK_INTERVAL_TICKS, TASK_INTERVAL_TICKS);
-        plugin.getPluginLogger().info("EventScheduler started (running every {} ticks).", TASK_INTERVAL_TICKS);
+
+        task = Bukkit.getScheduler().runTaskTimer(plugin, this, schedulerIntervalTicks, schedulerIntervalTicks);
+        plugin.getPluginLogger().info("EventScheduler started (running every {} ticks).", schedulerIntervalTicks);
     }
 
     /**
@@ -62,30 +109,29 @@ public class EventScheduler implements Runnable {
     @Override
     public void run() {
 
-        if (cooldownManager == null) {
-            plugin.getPluginLogger().error("CooldownManager is null in EventScheduler run()!");
+        if (cooldownManager == null || eventService == null || configManager == null) {
+            plugin.getPluginLogger().error("Manager or Service is null in EventScheduler run()!");
+            stop();
             return;
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (!isPlayerEligible(player)) {
-                plugin.getPluginLogger().debug("Skipping {} - not eligible.", player.getName());
+
                 continue;
             }
 
             if (cooldownManager.isOnGlobalCooldown(player)) {
-                plugin.getPluginLogger().debug("Skipping {} due to global cooldown.", player.getName());
+
                 continue;
             }
 
             double chance = calculateEventChance(player);
-            plugin.getPluginLogger().debug("Calculated chance for {}: {}", player.getName(), chance);
+
 
             if (ThreadLocalRandom.current().nextDouble() < chance) {
-                plugin.getPluginLogger().debug("Chance roll successful for {}.", player.getName());
+                plugin.getPluginLogger().debug("Chance roll successful for {}. Attempting to trigger event.", player.getName());
                 triggerRandomEvent(player);
-            } else {
-                plugin.getPluginLogger().debug("Chance roll failed for {}.", player.getName());
             }
         }
     }
@@ -96,7 +142,7 @@ public class EventScheduler implements Runnable {
      * @param player The player to check.
      * @return True if the player is eligible, false otherwise.
      */
-    private boolean isPlayerEligible(Player player) {
+    private boolean isPlayerEligible(@NotNull Player player) {
 
         if (player.getGameMode() != org.bukkit.GameMode.SURVIVAL && player.getGameMode() != org.bukkit.GameMode.ADVENTURE) {
             return false;
@@ -105,13 +151,14 @@ public class EventScheduler implements Runnable {
     }
 
     /**
-     * Calculates the dynamic chance for an event based on environmental factors.
+     * Calculates the dynamic chance for an event based on environmental factors,
+     * using values from the ConfigurationManager.
      *
      * @param player The player.
      * @return The calculated probability (0.0 to 1.0).
      */
-    private double calculateEventChance(Player player) {
-        double currentChance = BASE_EVENT_PROBABILITY;
+    private double calculateEventChance(@NotNull Player player) {
+        double currentChance = baseEventProbability;
         Location loc = player.getLocation();
         World world = player.getWorld();
 
@@ -119,11 +166,9 @@ public class EventScheduler implements Runnable {
 
             int lightLevel = loc.getBlock().getLightLevel();
             if (lightLevel < 5) {
-                currentChance *= 2.0;
-
+                currentChance *= chanceMultiplierDarkness;
             } else if (lightLevel < 8) {
-                currentChance *= 1.4;
-
+                currentChance *= chanceMultiplierDimness;
             }
         } catch (Exception e) {
             plugin.getPluginLogger().error("Error checking light level for {}", player.getName(), e);
@@ -134,51 +179,43 @@ public class EventScheduler implements Runnable {
         double yLevel = loc.getY();
         double seaLevel = world.getEnvironment() == World.Environment.NORMAL ? world.getSeaLevel() : 63;
         if (yLevel < seaLevel - 10) {
-            currentChance *= 1.5;
-
+            currentChance *= chanceMultiplierUndergroundDeep;
         } else if (yLevel < seaLevel - 5) {
-            currentChance *= 1.2;
-
+            currentChance *= chanceMultiplierUndergroundShallow;
         }
 
 
         double isolationRadius = 64.0;
         if (isPlayerIsolated(player, isolationRadius)) {
-            currentChance *= 1.75;
-
+            currentChance *= chanceMultiplierIsolated;
         }
 
 
         long time = world.getTime();
         boolean isNight = time > 13000 && time < 23000;
         if (isNight) {
-            currentChance *= 1.6;
-
+            currentChance *= chanceMultiplierNight;
         }
 
 
         if (world.getEnvironment() == World.Environment.NETHER) {
-            currentChance *= 1.3;
-
+            currentChance *= chanceMultiplierNether;
         } else if (world.getEnvironment() == World.Environment.THE_END) {
-            currentChance *= 1.5;
-
+            currentChance *= chanceMultiplierEnd;
         }
 
 
-        double maxChance = 0.35;
-        currentChance = Math.min(currentChance, maxChance);
+        currentChance = Math.min(currentChance, maxCalculatedChance);
 
 
-        if (currentChance > BASE_EVENT_PROBABILITY) {
-            plugin.getPluginLogger().debug("Calculated chance for {}: {} (Light: {}, Y: {}, Isolated: {}, Time: {}, Dim: {})",
+        if (currentChance > baseEventProbability * 1.1) {
+            plugin.getPluginLogger().debug("Calculated chance for {}: {} (Factors: Light {}, Y {}, Isolated {}, Time {})",
                     player.getName(),
                     currentChance,
                     loc.getBlock().getLightLevel(),
                     (int) yLevel,
                     isPlayerIsolated(player, isolationRadius),
-                    time,
-                    world.getEnvironment().name());
+                    time);
         }
 
 
@@ -188,7 +225,7 @@ public class EventScheduler implements Runnable {
     /**
      * Checks if the player is isolated (no other players within radius).
      */
-    private boolean isPlayerIsolated(Player player, double radius) {
+    private boolean isPlayerIsolated(@NotNull Player player, double radius) {
 
         if (Bukkit.getOnlinePlayers().size() <= 1) {
             return true;
@@ -218,7 +255,7 @@ public class EventScheduler implements Runnable {
      *
      * @param player The player to trigger the event for.
      */
-    private void triggerRandomEvent(Player player) {
+    private void triggerRandomEvent(@NotNull Player player) {
 
 
         List<String> eligibleEventKeys = eventService.getCurrentlyTriggerableEventKeys(player);
@@ -230,8 +267,8 @@ public class EventScheduler implements Runnable {
 
 
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        List<String> shuffledKeys = new java.util.ArrayList<>(eligibleEventKeys);
-        java.util.Collections.shuffle(shuffledKeys, random);
+        List<String> shuffledKeys = new ArrayList<>(eligibleEventKeys);
+        Collections.shuffle(shuffledKeys, random);
 
         boolean eventTriggered = false;
         for (String eventKey : shuffledKeys) {
@@ -240,8 +277,6 @@ public class EventScheduler implements Runnable {
                 eventTriggered = true;
 
                 break;
-            } else {
-                plugin.getPluginLogger().debug("Event '{}' skipped for {} by EventService (cooldown/canTrigger handled internally).", eventKey, player.getName());
             }
         }
 
@@ -250,6 +285,5 @@ public class EventScheduler implements Runnable {
         }
 
     }
-
 
 }

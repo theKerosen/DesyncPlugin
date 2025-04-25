@@ -1,0 +1,156 @@
+# Desync Configuration
+# This file controls the behavior and chances of paranoia-inducing effects.
+
+# Scheduler Settings
+scheduler:
+  # How often the plugin checks for players and calculates event chances (in Minecraft ticks, 20 ticks = 1 second)
+  # Recommended: 100 to 300 ticks (5-15 seconds)
+  interval-ticks: 100
+
+  # The base probability (0.0 to 1.0) of an eligible player receiving an event during a scheduler check.
+  # This is multiplied by environmental factors.
+  # Recommended: 0.01 to 0.05 (1% to 5%)
+  base-event-probability: 0.02
+
+# Chance Multipliers
+# These factors increase the base probability based on environmental conditions.
+# A multiplier of 1.0 means no change. Higher than 1.0 increases the chance.
+chances:
+  multipliers:
+    # Chance multiplier when light level is less than 5
+    darkness: 2.0
+    # Chance multiplier when light level is between 5 and 7 (inclusive)
+    dimness: 1.4
+    # Chance multiplier when player is deep underground (e.g. Y < sea level - 10)
+    underground-deep: 1.5
+    # Chance multiplier when player is moderately underground (e.g. Y < sea level - 5)
+    underground-shallow: 1.2
+    # Chance multiplier when the player is isolated from other players within a radius (see event settings for radius - currently hardcoded 64)
+    isolated: 1.75
+    # Chance multiplier during night time (Minecraft time 13000 to 23000)
+    night: 1.6
+    # Chance multiplier when player is in the Nether dimension
+    nether: 1.3
+    # Chance multiplier when player is in the End dimension
+    the-end: 1.5
+
+  # The maximum possible calculated chance (0.0 to 1.0) after applying all multipliers.
+  # Prevents chances from becoming too high, ensuring events remain somewhat rare.
+  # Recommended: 0.2 to 0.4 (20% to 40%)
+  max-calculated-chance: 0.35
+
+# Default Cooldowns
+# These are the default cooldowns applied to events if not specified individually below.
+# Cooldowns prevent events from happening too frequently for a player.
+# Values are in milliseconds (1000 ms = 1 second).
+cooldowns:
+  # Default cooldown after a specific event type (e.g. footstep event has happened)
+  default-event-ms: 30000 # 30 seconds
+  # Default cooldown applied after ANY event has successfully triggered for a player
+  default-global-ms: 5000 # 5 seconds
+
+# Individual Event Settings
+# You can override default cooldowns or configure specific event parameters here.
+# Event keys can be found using the /ds listevents command.
+#
+# Example: Overriding the default cooldown for the 'footstep' event
+# events:
+#   footstep:
+#     cooldown-ms: 45000 # This will make footstep events have a 45-second cooldown instead of the default
+
+# Individual Event Settings for Specific Parameters (Example: Fake Chat Messages)
+events:
+  # Fake Chat Event
+  fake_chat:
+    # Override default cooldown (optional)
+    # cooldown-ms: 180000 # 3 minutes
+    # List of messages the fake player might say. Use ChatColor codes (e.g., &7, &o).
+    messages:
+      - "&7&oYou are not alone."
+      - "&7&oSomething is watching."
+      - "&7&oJust a shadow."
+      - "&7&oDid you hear that?"
+      - "&7&oBehind you."
+      - "&8Static in the air..."
+      - "&7&oFootsteps nearby."
+      - "&c&oThey know you're here." # Example with different color/format
+      - "&7&o...get out..."
+
+  # Fake Player Join (Null) Event
+  fake_join_null:
+  # Override default cooldown (optional)
+  # cooldown-ms: 240000 # 4 minutes
+  # You could add settings here to change the fake name, etc. in the future.
+  # fake-name: "System" # Example future setting
+
+  # Visual Structure Event
+  visual_structure:
+  # Override default cooldown (optional)
+  # cooldown-ms: 120000 # 2 minutes
+  # Blueprints or related settings could go here in the future
+  # blueprints:
+  #   - name: simple_wall
+  #     blocks:
+  #       "0,0,0": COBBLESTONE
+  #       "0,1,0": COBBLESTONE
+  #       "0,2,0": COBBLESTONE
+
+  # Persistent Particle Event
+  persistent_particle:
+  # Override default cooldown (optional)
+  # cooldown-ms: 60000 # 1 minute
+  # Particle types list or related settings could go here
+
+  # Block Vanish Event
+  block_vanish:
+  # Override default cooldown (optional)
+  # cooldown-ms: 40000 # 40 seconds
+  # Eligible block types list could be defined here instead of hardcoded
+
+  # Fake Window Break Sound Event
+  fake_window_break:
+  # Override default cooldown (optional)
+  # cooldown-ms: 60000 # 1 minute
+  # Eligible block types list (glass types) could be defined here instead of hardcoded
+
+  # Fake Item Durability Event
+  item_durability:
+  # Override default cooldown (optional)
+  # cooldown-ms: 50000 # 50 seconds
+  # Min/max durability change could be configured here
+
+  # Animal Stare Event
+  animal_stare:
+  # Override default cooldown (optional)
+  # cooldown-ms: 60000 # 1 minute
+  # Search radius or eligible types could be configured here
+
+  # Animal Follow Event
+  animal_follow:
+  # Override default cooldown (optional)
+  # cooldown-ms: 75000 # 75 seconds
+  # Search radius, follow speed, eligible types could be configured here
+
+  # Ghost Block Interaction Event
+  ghost_block: # Using the key 'ghost_block'
+  # Override default cooldown (optional)
+  # cooldown-ms: 45000 # 45 seconds
+  # Eligible block types or sounds could be configured here
+
+  # Block Flicker Event
+  block_flicker:
+  # Override default cooldown (optional)
+  # cooldown-ms: 90000 # 1.5 minutes
+  # Eligible block types or flicker mappings could be configured here
+
+  # Peripheral Particle Event
+  peripheral_particle:
+  # Override default cooldown (optional)
+  # cooldown-ms: 100000 # 1 minute 40 seconds
+  # Particle types, radius, spread could be configured here
+
+  # Fake Damage Event
+  fake_damage:
+  # Override default cooldown (optional)
+  # cooldown-ms: 50000 # 50 seconds
+  # Minimum health requirement or chance of sound/visual could be configured here6

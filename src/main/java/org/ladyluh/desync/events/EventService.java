@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.ladyluh.desync.Desync;
 import org.ladyluh.desync.events.impl.*;
+import org.ladyluh.desync.managers.ConfigurationManager;
 import org.ladyluh.desync.managers.CooldownManager;
 import org.slf4j.Logger;
 
@@ -19,9 +20,8 @@ public class EventService {
     private final Desync plugin;
     private final Logger logger;
     private final CooldownManager cooldownManager;
-
-
     private final Map<String, PlayerDesyncEvent> registeredEvents = new HashMap<>();
+    private ConfigurationManager configManager;
 
     public EventService(@NotNull Desync plugin, @NotNull CooldownManager cooldownManager) {
         this.plugin = plugin;
@@ -30,6 +30,17 @@ public class EventService {
 
         registerDefaultEvents();
     }
+
+    /**
+     * Called by ConfigurationManager after config is loaded or reloaded.
+     */
+    public void reloadSettings() {
+        this.configManager = plugin.getConfigurationManager();
+
+
+        logger.debug("EventService settings reloaded (no specific settings managed here).");
+    }
+
 
     /**
      * Registers a PlayerDesyncEvent implementation.
@@ -129,6 +140,12 @@ public class EventService {
      * @return True if the event was triggered, false otherwise.
      */
     public boolean triggerEvent(@NotNull Player player, @NotNull String eventKey, boolean force) {
+
+        if (configManager == null) {
+            logger.error("ConfigurationManager is null in EventService.triggerEvent! Cannot trigger events.");
+            return false;
+        }
+
         PlayerDesyncEvent event = getEventByKey(eventKey);
 
         if (event == null) {
@@ -169,7 +186,7 @@ public class EventService {
             event.trigger(player, plugin);
 
 
-            cooldownManager.applyEventCooldown(player, event.getKey(), event.getDefaultCooldownMs());
+            cooldownManager.applyEventCooldown(player, event.getKey());
             cooldownManager.applyGlobalCooldown(player);
 
             return true;
@@ -186,6 +203,7 @@ public class EventService {
      * @param player   The player to trigger the event for.
      * @param eventKey The key of the event to trigger.
      * @return True if the event was triggered, false otherwise.
+     * UNUSED FOR NOW.
      */
     public boolean triggerEvent(@NotNull Player player, @NotNull String eventKey) {
         return triggerEvent(player, eventKey, false);

@@ -9,9 +9,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.ladyluh.desync.commands.DesyncCommand;
 import org.ladyluh.desync.events.EventService;
 import org.ladyluh.desync.listeners.PlayerQuitListener;
+import org.ladyluh.desync.managers.ConfigurationManager;
 import org.ladyluh.desync.managers.CooldownManager;
 import org.ladyluh.desync.scheduling.EventScheduler;
-import org.ladyluh.desync.utils.SkinUtils;
 import org.slf4j.Logger;
 
 import java.util.Objects;
@@ -22,6 +22,7 @@ public final class Desync extends JavaPlugin {
     private static Desync instance;
     private final Logger logger;
     private ProtocolManager protocolManager;
+    private ConfigurationManager configurationManager;
     private EventScheduler eventScheduler;
     private CooldownManager cooldownManager;
     private EventService eventService;
@@ -47,6 +48,12 @@ public final class Desync extends JavaPlugin {
         return cooldownManager;
     }
 
+    public ConfigurationManager getConfigurationManager() {
+        if (configurationManager == null)
+            throw new IllegalStateException("Attempted to get ConfigurationManager but it was not initialized!");
+        return configurationManager;
+    }
+
     public EventService getEventService() {
         if (eventService == null)
             throw new IllegalStateException("Attempted to get EventService but it was not initialized!");
@@ -68,12 +75,13 @@ public final class Desync extends JavaPlugin {
         logger.info("Successfully hooked into ProtocolLib.");
 
         logger.info("Initializing managers and services...");
+        configurationManager = new ConfigurationManager(this);
         cooldownManager = new CooldownManager(this);
         eventService = new EventService(this, cooldownManager);
         eventScheduler = new EventScheduler(this, eventService);
 
-        logger.info("Loading static data...");
-        SkinUtils.loadSkinProfile(this, logger);
+
+        configurationManager.loadConfig();
 
 
         logger.info("Registering listeners...");
@@ -101,7 +109,7 @@ public final class Desync extends JavaPlugin {
     public void onDisable() {
         PluginDescriptionFile pdf = this.getDescription();
         logger.info("========================================");
-        logger.info("Disabling {}...", pdf.getName());
+        logger.info("DIsabling {}...", pdf.getName());
 
         logger.info("Stopping tasks...");
         try {
@@ -133,6 +141,7 @@ public final class Desync extends JavaPlugin {
         logger.info("========================================");
         instance = null;
         protocolManager = null;
+        configurationManager = null;
         cooldownManager = null;
         eventService = null;
         eventScheduler = null;

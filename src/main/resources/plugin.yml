@@ -2,7 +2,7 @@ name: Desync
 main: org.ladyluh.desync.Desync
 version: ${project.version}
 api-version: '1.20' # Or your target 1.20.x version
-author: Luna
+author: LadyLuh
 description: Creates unsettling atmospheric and psychological horror events.
 depend:
   - ProtocolLib
