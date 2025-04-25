@@ -23,10 +23,11 @@ public class EventService {
     private final Map<String, PlayerDesyncEvent> registeredEvents = new HashMap<>();
     private ConfigurationManager configManager;
 
-    public EventService(@NotNull Desync plugin, @NotNull CooldownManager cooldownManager) {
+    public EventService(@NotNull Desync plugin, @NotNull CooldownManager cooldownManager, @NotNull ConfigurationManager configurationManager) {
         this.plugin = plugin;
         this.logger = plugin.getPluginLogger();
         this.cooldownManager = cooldownManager;
+        this.configManager = configurationManager;
 
         registerDefaultEvents();
     }
@@ -36,7 +37,6 @@ public class EventService {
      */
     public void reloadSettings() {
         this.configManager = plugin.getConfigurationManager();
-
 
         logger.debug("EventService settings reloaded (no specific settings managed here).");
     }

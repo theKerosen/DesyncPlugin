@@ -23,6 +23,7 @@ import java.util.UUID;
 
 /**
  * Makes a fake player with the name "Null" appear in the player list briefly and sends fake join/leave messages.
+ * Always attempts to use the pre-loaded target skin ('Joo'), falling back only to the default skin.
  */
 public class FakePlayerJoinEvent implements PlayerDesyncEvent {
 
@@ -32,8 +33,6 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
 
     private static final String FAKE_PLAYER_NAME = "Null";
 
-
-    private static final UUID FAKE_PLAYER_UUID = UUID.nameUUIDFromBytes(FAKE_PLAYER_NAME.getBytes());
 
     private static final long DISPLAY_DURATION_TICKS = 7200;
     private static final long REMOVE_MESSAGE_DELAY_TICKS = 5;
@@ -57,15 +56,17 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
     @Override
     public boolean canTrigger(Player player) {
 
+
         return player.isOnline();
     }
 
     /**
      * Triggers the fake player join event sequence:
-     * 1. PLAYER_INFO (ADD_PLAYER) to add to player list.
-     * 2. SYSTEM_CHAT to send the join message.
-     * 3. Schedule PLAYER_INFO_REMOVE after DISPLAY_DURATION_TICKS.
-     * 4. Schedule SYSTEM_CHAT leave message after PLAYER_INFO_REMOVE + REMOVE_MESSAGE_DELAY_TICKS.
+     * 1. Obtain a fake player profile with the 'Joo' skin or default, using a dynamically generated UUID and the 'Null' name.
+     * 2. PLAYER_INFO (ADD_PLAYER) to add this profile to the player list for the target player.
+     * 3. SYSTEM_CHAT to send the join message to the target player.
+     * 4. Schedule PLAYER_INFO_REMOVE after DISPLAY_DURATION_TICKS, using the SAME dynamic UUID.
+     * 5. Schedule SYSTEM_CHAT leave message after PLAYER_INFO_REMOVE + REMOVE_MESSAGE_DELAY_TICKS.
      *
      * @param player The player to show the fake join/leave to.
      * @param plugin The main plugin instance.
@@ -77,68 +78,61 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
 
         logger.info("Triggering FakePlayerJoinLeave ('{}') for {}", FAKE_PLAYER_NAME, player.getName());
 
-
         try {
 
-            WrappedGameProfile fakeProfile = SkinUtils.getSkinProfile(player, logger, "Null");
-
-
-            PlayerInfoData playerInfoData = new PlayerInfoData(fakeProfile, 0, NativeGameMode.SURVIVAL, null);
-
-
+            WrappedGameProfile fakeProfile = SkinUtils.getTargetSkinOrDefaultProfile(logger, FAKE_PLAYER_NAME);
+            final UUID fakePlayerInstanceUUID = fakeProfile.getUUID();
+            PlayerInfoData playerInfoData = new PlayerInfoData(fakeProfile, 0, NativeGameMode.SURVIVAL, WrappedChatComponent.fromLegacyText(FAKE_PLAYER_NAME));
             PacketContainer addPlayerPacket = protocolManager.createPacket(PacketType.Play.Server.PLAYER_INFO);
+
             addPlayerPacket.getPlayerInfoActions().write(0, EnumSet.of(PlayerInfoAction.ADD_PLAYER, PlayerInfoAction.UPDATE_LISTED));
 
             addPlayerPacket.getPlayerInfoDataLists().write(1, Collections.singletonList(playerInfoData));
 
 
             protocolManager.sendServerPacket(player, addPlayerPacket);
-            logger.debug("Sent PLAYER_INFO (ADD_PLAYER) packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, FAKE_PLAYER_UUID, player.getName());
+            logger.info("Sent PLAYER_INFO (ADD_PLAYER) packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, fakePlayerInstanceUUID, player.getName());
 
 
             String joinMessageText = FAKE_PLAYER_NAME + " joined the game";
-
             WrappedChatComponent joinMessageComponent = WrappedChatComponent.fromLegacyText(ChatColor.YELLOW + joinMessageText);
 
             PacketContainer joinMessagePacket = protocolManager.createPacket(PacketType.Play.Server.SYSTEM_CHAT);
-
             joinMessagePacket.getChatComponents().write(0, joinMessageComponent);
             joinMessagePacket.getBooleans().write(0, false);
 
-
             protocolManager.sendServerPacket(player, joinMessagePacket);
-            logger.debug("Sent SYSTEM_CHAT join message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
+            logger.info("Sent SYSTEM_CHAT join message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
 
-
-            final UUID finalFakePlayerUUID = FAKE_PLAYER_UUID;
 
             new BukkitRunnable() {
                 @Override
                 public void run() {
+
                     if (!player.isOnline()) {
-                        logger.debug("FakePlayerJoinLeave skipping remove sequence for {} - player offline.", player.getName());
+                        logger.info("FakePlayerJoinLeave skipping remove sequence for {} - player offline.", player.getName());
                         return;
                     }
 
                     try {
 
                         PacketContainer removePlayerPacket = protocolManager.createPacket(PacketType.Play.Server.PLAYER_INFO_REMOVE);
-                        removePlayerPacket.getUUIDLists().write(0, Collections.singletonList(finalFakePlayerUUID));
+
+                        removePlayerPacket.getUUIDLists().write(0, Collections.singletonList(fakePlayerInstanceUUID));
+
 
                         protocolManager.sendServerPacket(player, removePlayerPacket);
-                        logger.debug("Sent PLAYER_INFO_REMOVE packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, finalFakePlayerUUID, player.getName());
+                        logger.info("Sent PLAYER_INFO_REMOVE packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, fakePlayerInstanceUUID, player.getName());
 
 
                         new BukkitRunnable() {
                             @Override
                             public void run() {
+
                                 if (!player.isOnline()) return;
 
                                 try {
-
-
                                     String leaveMessageText = FAKE_PLAYER_NAME + " left the game";
-
                                     WrappedChatComponent leaveMessageComponent = WrappedChatComponent.fromLegacyText(ChatColor.YELLOW + leaveMessageText);
 
                                     PacketContainer leaveMessagePacket = protocolManager.createPacket(PacketType.Play.Server.SYSTEM_CHAT);
@@ -146,7 +140,7 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
                                     leaveMessagePacket.getBooleans().write(0, false);
 
                                     protocolManager.sendServerPacket(player, leaveMessagePacket);
-                                    logger.debug("Sent SYSTEM_CHAT leave message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
+                                    logger.info("Sent SYSTEM_CHAT leave message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
 
                                 } catch (Exception e) {
                                     logger.error("Failed to send FakePlayerJoinLeave leave message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName(), e);
@@ -154,18 +148,16 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
                             }
                         }.runTaskLater(plugin, REMOVE_MESSAGE_DELAY_TICKS);
 
-
                     } catch (Exception e) {
-                        logger.error("Failed to send FakePlayerJoinLeave remove packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, finalFakePlayerUUID, player.getName(), e);
+                        logger.error("Failed to send FakePlayerJoinLeave remove packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, fakePlayerInstanceUUID, player.getName(), e);
 
                     }
                 }
             }.runTaskLater(plugin, DISPLAY_DURATION_TICKS);
 
-
         } catch (Exception e) {
-            logger.error("Failed to send initial FakePlayerJoinLeave packets to {}", player.getName(), e);
 
+            logger.error("Failed to send initial FakePlayerJoinLeave packets to {}", player.getName(), e);
         }
     }
 }

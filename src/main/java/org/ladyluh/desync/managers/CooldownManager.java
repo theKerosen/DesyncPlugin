@@ -10,29 +10,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CooldownManager {
 
-    private final Desync plugin;
     private final Logger logger;
     private final Map<UUID, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
     private final Map<UUID, Long> globalCooldowns = new ConcurrentHashMap<>();
-    private ConfigurationManager configManager;
+    private final ConfigurationManager configManager;
     private long defaultEventCooldownMs;
     private long defaultGlobalCooldownMs;
 
 
     public CooldownManager(Desync plugin) {
-        this.plugin = plugin;
         this.logger = plugin.getPluginLogger();
 
         this.defaultEventCooldownMs = 30 * 1000L;
         this.defaultGlobalCooldownMs = 5 * 1000L;
+        this.configManager = plugin.getConfigurationManager();
     }
 
     /**
      * Called by ConfigurationManager after config is loaded or reloaded.
      */
     public void reloadSettings() {
-        this.configManager = plugin.getConfigurationManager();
-
 
         this.defaultEventCooldownMs = configManager.getDefaultEventCooldownMs();
         this.defaultGlobalCooldownMs = configManager.getDefaultGlobalCooldownMs();

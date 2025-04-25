@@ -12,6 +12,7 @@ import org.ladyluh.desync.listeners.PlayerQuitListener;
 import org.ladyluh.desync.managers.ConfigurationManager;
 import org.ladyluh.desync.managers.CooldownManager;
 import org.ladyluh.desync.scheduling.EventScheduler;
+import org.ladyluh.desync.utils.SkinUtils;
 import org.slf4j.Logger;
 
 import java.util.Objects;
@@ -77,8 +78,8 @@ public final class Desync extends JavaPlugin {
         logger.info("Initializing managers and services...");
         configurationManager = new ConfigurationManager(this);
         cooldownManager = new CooldownManager(this);
-        eventService = new EventService(this, cooldownManager);
-        eventScheduler = new EventScheduler(this, eventService);
+        eventService = new EventService(this, cooldownManager, configurationManager);
+        eventScheduler = new EventScheduler(this, eventService, configurationManager);
 
 
         configurationManager.loadConfig();
@@ -99,8 +100,9 @@ public final class Desync extends JavaPlugin {
 
         logger.info("Starting tasks...");
         eventScheduler.start();
+        SkinUtils.loadSkinProfile(this, getPluginLogger());
 
-        logger.info(pdf.getName() + " enabled successfully.");
+        logger.info("{} enabled successfully.", pdf.getName());
         logger.info("Things might get weird.");
         logger.info("========================================");
     }
@@ -109,7 +111,7 @@ public final class Desync extends JavaPlugin {
     public void onDisable() {
         PluginDescriptionFile pdf = this.getDescription();
         logger.info("========================================");
-        logger.info("DIsabling {}...", pdf.getName());
+        logger.info("Disabling {}...", pdf.getName());
 
         logger.info("Stopping tasks...");
         try {

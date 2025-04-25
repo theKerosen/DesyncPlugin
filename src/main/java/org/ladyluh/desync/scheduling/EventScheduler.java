@@ -22,6 +22,7 @@ public class EventScheduler implements Runnable {
     private final Desync plugin;
     private final EventService eventService;
     private final CooldownManager cooldownManager;
+    private final ConfigurationManager configManager;
     private BukkitTask task;
 
 
@@ -38,10 +39,11 @@ public class EventScheduler implements Runnable {
     private double maxCalculatedChance;
 
 
-    public EventScheduler(@NotNull Desync plugin, @NotNull EventService eventService) {
+    public EventScheduler(@NotNull Desync plugin, @NotNull EventService eventService, @NotNull ConfigurationManager configManager) {
         this.plugin = plugin;
         this.eventService = eventService;
         this.cooldownManager = plugin.getCooldownManager();
+        this.configManager = configManager;
 
     }
 
@@ -49,7 +51,6 @@ public class EventScheduler implements Runnable {
      * Called by ConfigurationManager after config is loaded or reloaded.
      */
     public void reloadSettings() {
-        ConfigurationManager configManager = plugin.getConfigurationManager();
 
 
         this.schedulerIntervalTicks = configManager.getSchedulerIntervalTicks();
@@ -108,7 +109,7 @@ public class EventScheduler implements Runnable {
     @Override
     public void run() {
 
-        if (plugin.getCooldownManager() == null || plugin.getEventService() == null || plugin.getConfigurationManager() == null) {
+        if (cooldownManager == null || eventService == null || configManager == null) {
             plugin.getPluginLogger().error("Manager or Service is null in EventScheduler run()!");
             stop();
             return;
@@ -269,20 +270,15 @@ public class EventScheduler implements Runnable {
         List<String> shuffledKeys = new ArrayList<>(eligibleEventKeys);
         Collections.shuffle(shuffledKeys, random);
 
-        boolean eventTriggered = false;
         for (String eventKey : shuffledKeys) {
 
             if (eventService.triggerEvent(player, eventKey, false)) {
-                eventTriggered = true;
 
                 break;
             }
-        }
 
-        if (!eventTriggered) {
             plugin.getPluginLogger().debug("No event was triggered for {} after checking {} eligible types (all on cooldown?).", player.getName(), eligibleEventKeys.size());
         }
-
     }
 
 }

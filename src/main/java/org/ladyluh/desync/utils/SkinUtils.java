@@ -28,65 +28,90 @@ import java.util.stream.Collectors;
  */
 public class SkinUtils {
 
+    
     private static final String TARGET_SKIN_NICKNAME = "Joo";
 
+    
+    
+    
     private static volatile WrappedGameProfile targetSkinProfile = null;
-    private static volatile boolean targetSkinProfileLoaded = false;
+
+    
+    private static volatile boolean targetSkinProfileLoadAttempted = false;
 
     private SkinUtils() {}
 
     /**
-     * Initiates the asynchronous loading of the target skin profile (e.g., for "Null").
+     * Initiates the asynchronous loading of the target skin profile (for "Joo").
      * Should be called once on plugin startup.
+     * Populates the static {@code targetSkinProfile} field if successful.
      *
      * @param plugin The main plugin instance to schedule tasks.
      * @param logger The plugin logger.
      */
     public static void loadSkinProfile(@NotNull JavaPlugin plugin, @NotNull Logger logger) {
-        if (targetSkinProfileLoaded) {
-            logger.info("Target skin profile loading already attempted.");
-            return;
+        
+        synchronized (SkinUtils.class) {
+            if (targetSkinProfileLoadAttempted) {
+                logger.debug("Target skin profile loading already attempted.");
+                return;
+            }
+            targetSkinProfileLoadAttempted = true; 
         }
-        targetSkinProfileLoaded = true; // Mark loading as attempted
 
-        logger.info("Attempting to load skin profile for nickname '{}' asynchronously...", TARGET_SKIN_NICKNAME);
 
+        logger.debug("Attempting to load target skin profile for nickname '{}' asynchronously...", TARGET_SKIN_NICKNAME);
+
+        
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                UUID uuid = getUuidFromNickname(logger);
+                logger.debug("Async skin loading task started for '{}'.", TARGET_SKIN_NICKNAME);
+                
+                UUID uuid = getUuidFromNicknameInternal(logger); 
 
                 if (uuid == null) {
-                    logger.warn("Could not find UUID for nickname '{}' via Mojang API.", TARGET_SKIN_NICKNAME);
-                    return;
+                    logger.warn("Async skin loading for '{}' failed: Could not find UUID.", TARGET_SKIN_NICKNAME);
+                    
+                    return; 
                 }
+                logger.debug("Async skin loading for '{}': Found UUID {}.", TARGET_SKIN_NICKNAME, uuid);
 
-                WrappedGameProfile profile = getProfileWithProperties(uuid, logger);
+                
+                WrappedGameProfile profile = getProfileWithPropertiesInternal(uuid, logger); 
 
-                if (profile != null && profile.getProperties().containsKey("textures")) {
+                
+                if (profile != null && profile.getProperties().containsKey("textures") && !profile.getProperties().get("textures").isEmpty()) {
+                    
+                    
                     targetSkinProfile = profile;
-                    logger.info("Successfully loaded skin profile for '{}' (UUID: {}) via Mojang API.", TARGET_SKIN_NICKNAME, uuid);
+                    logger.debug("Async skin loading for '{}' finished: Successfully loaded profile and textures.", TARGET_SKIN_NICKNAME);
                 } else {
-                    logger.warn("Loaded profile for '{}' (UUID: {}), but no texture properties found. Using default skin.", TARGET_SKIN_NICKNAME, uuid);
+                    
+                    
+                    logger.warn("Async skin loading for '{}' finished: Profile loaded (UUID: {}) but has no texture properties or property fetch failed.", TARGET_SKIN_NICKNAME, uuid);
+                    
                 }
 
             } catch (Exception e) {
-                logger.error("An unexpected error occurred during async skin profile loading for '{}'.", TARGET_SKIN_NICKNAME, e);
-                targetSkinProfile = null;
+                
+                logger.error("Async skin loading for '{}' failed unexpectedly.", TARGET_SKIN_NICKNAME, e);
+                targetSkinProfile = null; 
             }
+            
         });
     }
 
     /**
      * Fetches a UUID for a given nickname from the Mojang API.
-     * This is a blocking network call and should be run asynchronously.
+     * This is a blocking network call intended for internal async use.
      *
      * @param logger The plugin logger.
      * @return The UUID, or null if not found or error occurs.
      */
     @Nullable
-    private static UUID getUuidFromNickname(@NotNull Logger logger) {
+    private static UUID getUuidFromNicknameInternal(@NotNull Logger logger) {
         try {
-            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + SkinUtils.TARGET_SKIN_NICKNAME);
+            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + TARGET_SKIN_NICKNAME); // Use TARGET_SKIN_NICKNAME constant
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(5000);
@@ -98,34 +123,39 @@ public class SkinUtils {
                     JSONParser parser = new JSONParser();
                     JSONObject json = (JSONObject) parser.parse(reader);
                     String uuidString = (String) json.get("id");
+                    if (uuidString == null) {
+                        logger.debug("Mojang API returned OK for '{}' but no 'id' field found.", TARGET_SKIN_NICKNAME);
+                        return null;
+                    }
                     uuidString = uuidString.replaceFirst(
                             "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
                             "$1-$2-$3-$4-$5");
                     return UUID.fromString(uuidString);
                 }
             } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                logger.info("Nickname '{}' not found via Mojang API (404).", SkinUtils.TARGET_SKIN_NICKNAME);
+                logger.debug("Nickname '{}' not found via Mojang API (404 response).", TARGET_SKIN_NICKNAME);
                 return null;
             } else {
-                logger.warn("Failed to get UUID for nickname '{}' from Mojang API. Response code: {}", SkinUtils.TARGET_SKIN_NICKNAME, responseCode);
+                logger.warn("Failed to get UUID for nickname '{}' from Mojang API. Response code: {}", TARGET_SKIN_NICKNAME, responseCode);
                 return null;
             }
         } catch (Exception e) {
-            logger.error("Error fetching UUID for nickname '{}' from Mojang API.", SkinUtils.TARGET_SKIN_NICKNAME, e);
+            logger.error("Error fetching UUID for nickname '{}' from Mojang API.", TARGET_SKIN_NICKNAME, e);
             return null;
         }
     }
 
     /**
      * Fetches a GameProfile with skin properties for a given UUID from the Mojang Session Server API.
-     * This is a blocking network call and should be run asynchronously.
+     * This is a blocking network call intended for internal async use.
+     * Used by {@link #loadSkinProfile(JavaPlugin, Logger)} to get properties for the target skin.
      *
      * @param uuid   The UUID to look up.
      * @param logger The plugin logger.
-     * @return The WrappedGameProfile with properties, or null if failed or no texture properties.
+     * @return The WrappedGameProfile with properties, or null if failed or no texture properties found.
      */
     @Nullable
-    private static WrappedGameProfile getProfileWithProperties(@NotNull UUID uuid, @NotNull Logger logger) {
+    private static WrappedGameProfile getProfileWithPropertiesInternal(@NotNull UUID uuid, @NotNull Logger logger) {
         try {
             URL url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -138,15 +168,18 @@ public class SkinUtils {
                 try (InputStreamReader reader = new InputStreamReader(connection.getInputStream())) {
                     JSONParser parser = new JSONParser();
                     JSONObject json = (JSONObject) parser.parse(reader);
+
+                    String profileName = (String) json.get("name");
                     JSONArray propertiesArray = (JSONArray) json.get("properties");
 
-                    if (propertiesArray == null) {
-                        logger.info("Profile for UUID {} has no properties.", uuid);
-                        return null;
+                    if (propertiesArray == null || propertiesArray.isEmpty()) {
+                        logger.debug("Profile for UUID {} has no properties.", uuid);
+                        return new WrappedGameProfile(uuid, profileName);
                     }
 
-                    WrappedGameProfile profile = new WrappedGameProfile(uuid, (String) json.get("name"));
+                    WrappedGameProfile profile = new WrappedGameProfile(uuid, profileName);
 
+                    boolean foundTextures = false;
                     for (Object propObj : propertiesArray) {
                         JSONObject propJson = (JSONObject) propObj;
                         String name = (String) propJson.get("name");
@@ -155,12 +188,20 @@ public class SkinUtils {
 
                         if ("textures".equals(name)) {
                             profile.getProperties().put(name, new WrappedSignedProperty(name, value, signature));
-                            logger.info("Found and added 'textures' property for UUID {}.", uuid);
+                            logger.debug("Found and added 'textures' property for UUID {}.", uuid);
+                            foundTextures = true;
                         } else {
                             profile.getProperties().put(name, new WrappedSignedProperty(name, value, signature));
+                            logger.debug("Added other property '{}' for UUID {}.", name, uuid);
                         }
                     }
-                    return profile;
+
+                    if (foundTextures) {
+                        return profile;
+                    } else {
+                        logger.debug("Profile for UUID {} was loaded, but the 'textures' property was not found.", uuid);
+                        return profile;
+                    }
 
                 }
             } else {
@@ -173,63 +214,134 @@ public class SkinUtils {
         }
     }
 
+
     /**
-     * Gets a WrappedGameProfile with skin data for a fake player.
-     * Prioritizes the pre-loaded target skin, then a random online player's skin, then the default skin.
+     * Gets a WrappedGameProfile using the pre-loaded target skin ("Joo").
+     * If the target skin is not available, it falls back directly to a profile with the default skin.
+     * This method explicitly does NOT use online players as a fallback.
+     * The returned profile will have the provided {@code nickname}.
      *
-     * @param targetPlayer The player who will see the fake entity. Used to exclude from online skin source selection.
-     * @param logger       The plugin logger.
-     * @param nickname     The profile's nickname
-     * @return A WrappedGameProfile with skin data (or default).
+     * @param logger   The plugin logger.
+     * @param nickname The desired nickname for the fake player profile (e.g., "Null").
+     * @return A WrappedGameProfile with either the target skin or the default skin.
      */
     @NotNull
-    public static WrappedGameProfile getSkinProfile(@NotNull Player targetPlayer, @NotNull Logger logger, @NotNull String nickname) {
-        if (targetSkinProfile != null) {
-            UUID instanceUuid = UUID.randomUUID();
-            WrappedGameProfile profile = new WrappedGameProfile(instanceUuid, nickname);
-            for (WrappedSignedProperty property : targetSkinProfile.getProperties().values()) {
-                profile.getProperties().put(property.getName(), property);
+    public static WrappedGameProfile getTargetSkinOrDefaultProfile(@NotNull Logger logger, @NotNull String nickname) {
+        
+        UUID fakeEntityUUID = UUID.randomUUID();
+
+        
+        
+        if (targetSkinProfile != null && targetSkinProfile.getProperties().containsKey("textures") && !targetSkinProfile.getProperties().get("textures").isEmpty()) {
+            
+            
+            WrappedGameProfile profile = new WrappedGameProfile(fakeEntityUUID, nickname);
+
+            
+            
+            Collection<WrappedSignedProperty> textureProperties = targetSkinProfile.getProperties().get("textures");
+            
+            if (!textureProperties.isEmpty()) {
+                WrappedSignedProperty textureProperty = textureProperties.iterator().next();
+                profile.getProperties().put("textures", new WrappedSignedProperty(textureProperty.getName(), textureProperty.getValue(), textureProperty.getSignature()));
+                logger.debug("Using cached target skin profile (for '{}') for fake player (UUID: {}, Nickname: {}).", TARGET_SKIN_NICKNAME, fakeEntityUUID, nickname);
+                return profile; 
+            } else {
+                
+                logger.warn("Cached target skin profile (for '{}') unexpectedly had empty textures property list. Falling back to default.", TARGET_SKIN_NICKNAME);
             }
-            logger.info("Using pre-loaded target skin profile for stalker (UUID: {}).", instanceUuid);
-            return profile;
         }
 
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        UUID stalkerUUID = UUID.randomUUID();
+        
 
-        Player skinSource;
+        
+        
+        
+        logger.debug("Target skin profile (for '{}') not cached or invalid. Using default skin profile for fake player (UUID: {}, Nickname: {}).", TARGET_SKIN_NICKNAME, fakeEntityUUID, nickname);
+        return new WrappedGameProfile(fakeEntityUUID, nickname); 
+    }
+
+    
+    
+    
+    @NotNull
+    public static WrappedGameProfile getSkinProfile(@NotNull Player targetPlayer, @NotNull Logger logger, @NotNull String nickname) {
+        UUID fakeEntityUUID = UUID.randomUUID(); 
+
+
+        
+        
+        if (targetSkinProfile != null && targetSkinProfile.getProperties().containsKey("textures") && !targetSkinProfile.getProperties().get("textures").isEmpty()) {
+            
+            
+            WrappedGameProfile profile = new WrappedGameProfile(fakeEntityUUID, nickname);
+
+            
+            
+            Collection<WrappedSignedProperty> textureProperties = targetSkinProfile.getProperties().get("textures");
+            if (!textureProperties.isEmpty()) {
+                WrappedSignedProperty textureProperty = textureProperties.iterator().next();
+                profile.getProperties().put("textures", new WrappedSignedProperty(textureProperty.getName(), textureProperty.getValue(), textureProperty.getSignature()));
+                logger.debug("Using cached target skin profile (for '{}') for fake player (UUID: {}, Nickname: {}).", TARGET_SKIN_NICKNAME, fakeEntityUUID, nickname);
+                return profile; 
+            } else {
+                
+                logger.warn("Cached target skin profile (for '{}') unexpectedly had empty textures property list. Falling back to online players or default.", TARGET_SKIN_NICKNAME);
+            }
+        }
+
+        
+
+        
+        logger.debug("Target skin profile (for '{}') not cached or invalid. Attempting to use a random online player's skin as fallback...", TARGET_SKIN_NICKNAME);
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        
         List<Player> candidates = Bukkit.getOnlinePlayers().stream()
                 .filter(p -> !p.equals(targetPlayer))
                 .collect(Collectors.toList());
 
+        
         if (!candidates.isEmpty()) {
-            skinSource = candidates.get(random.nextInt(candidates.size()));
-            logger.info("Attempting to use random online player skin from: {}", skinSource.getName());
+            Player skinSource = candidates.get(random.nextInt(candidates.size()));
+            logger.debug("Attempting to use random online player skin from: {}", skinSource.getName());
 
             try {
+                
                 WrappedGameProfile sourceWrappedProfile = WrappedGameProfile.fromPlayer(skinSource);
                 Multimap<String, WrappedSignedProperty> sourceProperties = sourceWrappedProfile.getProperties();
 
-                WrappedGameProfile profile = new WrappedGameProfile(stalkerUUID, skinSource.getName());
+                
+                WrappedGameProfile profile = new WrappedGameProfile(fakeEntityUUID, nickname);
 
-                if (sourceProperties.containsKey("textures")) {
+                
+                if (sourceProperties.containsKey("textures") && !sourceProperties.get("textures").isEmpty()) {
                     Collection<WrappedSignedProperty> textureProperties = sourceProperties.get("textures");
-                    if (!textureProperties.isEmpty()) {
-                        WrappedSignedProperty textureProperty = textureProperties.iterator().next();
-                        profile.getProperties().put("textures", textureProperty);
-                        logger.info("Successfully applied random online player texture property to stalker profile (UUID: {}).", stalkerUUID);
-                        return profile;
-                    }
+                    
+                    WrappedSignedProperty textureProperty = textureProperties.iterator().next();
+                    profile.getProperties().put("textures", new WrappedSignedProperty(textureProperty.getName(), textureProperty.getValue(), textureProperty.getSignature()));
+                    logger.debug("Successfully applied random online player texture property to fake player profile (UUID: {}, Nickname: {}).", fakeEntityUUID, nickname);
+                    return profile; 
+                } else {
+                    
+                    logger.debug("Random online player {} has no texture properties. Falling back to default skin.", skinSource.getName());
                 }
-                logger.info("Random online player {} has no texture properties. Falling back to default.", skinSource.getName());
             } catch (Exception e) {
+                
                 logger.error("Error getting skin from random online player {}. Falling back to default.", skinSource.getName(), e);
+                
             }
         } else {
-            logger.info("No other players online. Falling back to default skin.");
+            
+            logger.debug("No other players online to use as fallback. Falling back to default skin.");
         }
 
-        logger.info("Using default skin profile for stalker (UUID: {}).", stalkerUUID);
-        return new WrappedGameProfile(stalkerUUID, nickname);
+        
+
+        
+        
+        
+        logger.debug("Using default skin profile for fake player (UUID: {}, Nickname: {}).", fakeEntityUUID, nickname);
+        return new WrappedGameProfile(fakeEntityUUID, nickname); 
     }
 }

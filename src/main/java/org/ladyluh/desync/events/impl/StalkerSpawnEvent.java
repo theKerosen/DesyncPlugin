@@ -51,10 +51,10 @@ public class StalkerSpawnEvent implements PlayerDesyncEvent {
     );
     private static final double STALKER_MIN_DISTANCE = 60.0;
     private static final double STALKER_MAX_DISTANCE = 100.0;
-    private static final double STALKER_VIEW_ANGLE_THRESHOLD = 80.0;
-    private static final long STALKER_VIEW_DESPAWN_TICKS = 35;
+    private static final double STALKER_VIEW_ANGLE_THRESHOLD = 65.0;
+    private static final long STALKER_VIEW_DESPAWN_TICKS = 80;
     private static final double STALKER_INTERACTION_RADIUS = STALKER_MAX_DISTANCE + 35.0;
-    private static final long STALKER_MAX_LIFESPAN_TICKS = 20 * 15;
+    private static final long STALKER_MAX_LIFESPAN_TICKS = 20 * 60;
     private static final double STALKER_ISOLATION_RADIUS_OTHERS = 128.0;
     private static final AtomicInteger fakeEntityIdCounter = new AtomicInteger(Integer.MIN_VALUE / 2);
 
