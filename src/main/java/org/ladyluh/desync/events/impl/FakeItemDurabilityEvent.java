@@ -158,7 +158,7 @@ public class FakeItemDurabilityEvent implements PlayerDesyncEvent {
         }
 
 
-        logger.info("Triggering FakeItemDurability for {} (Slot {}, Damage: {} -> {})",
+        logger.debug("Triggering FakeItemDurability for {} (Slot {}, Damage: {} -> {})",
                 player.getName(), targetSlot, currentDamage, fakeNewDamage);
 
 

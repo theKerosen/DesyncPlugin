@@ -198,7 +198,7 @@ public class BlockFlickerEvent implements PlayerDesyncEvent {
 
 
         EffectUtils.sendBlockChange(player, blockLocation, flickerBlockData, plugin);
-        logger.info("Triggered BlockFlicker for {}: Changed {} at {} clientside.",
+        logger.debug("Triggered BlockFlicker for {}: Changed {} at {} clientside.",
                 player.getName(), originalMaterial, blockLocation.toVector());
 
 

@@ -79,7 +79,7 @@ public class FakeChatMessageEvent implements PlayerDesyncEvent {
         String formattedMessage = rawMessage.contains(ChatColor.COLOR_CHAR + "") ? rawMessage : ChatColor.GRAY + "" + ChatColor.ITALIC + rawMessage;
 
 
-        logger.info("Triggering FakeChat for {}: \"{}\"", player.getName(), rawMessage);
+        logger.debug("Triggering FakeChat for {}: \"{}\"", player.getName(), rawMessage);
 
         
         try {

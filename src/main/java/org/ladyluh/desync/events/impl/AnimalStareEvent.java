@@ -63,7 +63,7 @@ public class AnimalStareEvent implements PlayerDesyncEvent {
         List<StareData> tasksToCancel = activeStaresByPlayer.remove(playerUUID);
 
         if (tasksToCancel != null && !tasksToCancel.isEmpty()) {
-            logger.info("Globally cancelling {} animal stare tasks for player {}", tasksToCancel.size(), playerUUID);
+            logger.debug("Globally cancelling {} animal stare tasks for player {}", tasksToCancel.size(), playerUUID);
             for (StareData data : tasksToCancel) {
 
 
@@ -188,7 +188,7 @@ public class AnimalStareEvent implements PlayerDesyncEvent {
         }
 
 
-        logger.info("Triggering AnimalStare for {} animals near {}", nearbyAnimals.size(), player.getName());
+        logger.debug("Triggering AnimalStare for {} animals near {}", nearbyAnimals.size(), player.getName());
 
 
         List<StareData> playerStares = activeStaresByPlayer.computeIfAbsent(player.getUniqueId(), k -> Collections.synchronizedList(new ArrayList<>()));

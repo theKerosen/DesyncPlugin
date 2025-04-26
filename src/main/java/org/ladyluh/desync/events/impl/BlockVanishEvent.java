@@ -185,7 +185,7 @@ public class BlockVanishEvent implements PlayerDesyncEvent {
         BlockData originalBlockData = targetBlock.getBlockData();
 
 
-        logger.info("Triggering BlockVanish for {} at {}", player.getName(), blockLocation.toVector());
+        logger.debug("Triggering BlockVanish for {} at {}", player.getName(), blockLocation.toVector());
 
         // --- Send vanish packet (change to air clientside) ---
         try {

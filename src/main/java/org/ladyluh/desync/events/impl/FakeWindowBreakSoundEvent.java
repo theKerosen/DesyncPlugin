@@ -185,7 +185,7 @@ public class FakeWindowBreakSoundEvent implements PlayerDesyncEvent {
 
         float pitch = 1.0f + (float) (random.nextDouble() * (pitchVariance * 2) - pitchVariance);
 
-        logger.info("Triggering FakeWindowBreakSound for {} at {}",
+        logger.debug("Triggering FakeWindowBreakSound for {} at {}",
                 player.getName(), soundLocation.toVector());
 
 

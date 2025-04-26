@@ -56,7 +56,7 @@ public class StalkerSpawnEvent implements PlayerDesyncEvent {
     private static final double STALKER_INTERACTION_RADIUS = STALKER_MAX_DISTANCE + 35.0;
     private static final long STALKER_MAX_LIFESPAN_TICKS = 20 * 60;
     private static final double STALKER_ISOLATION_RADIUS_OTHERS = 128.0;
-    private static final AtomicInteger fakeEntityIdCounter = new AtomicInteger(Integer.MIN_VALUE / 2);
+    static final AtomicInteger fakeEntityIdCounter = new AtomicInteger(Integer.MIN_VALUE / 2);
 
     /**
      * Static helper to check if a specific mob is currently involved in an active stalker task.
@@ -149,7 +149,7 @@ public class StalkerSpawnEvent implements PlayerDesyncEvent {
         StalkerData removedData = activeStalkers.remove(playerUUID);
 
         if (removedData != null) {
-            logger.info("Cancelling active stalker ID {} for player {}", removedData.entityId(), playerUUID);
+            logger.debug("Cancelling active stalker ID {} for player {}", removedData.entityId(), playerUUID);
 
             if (removedData.task() != null && !removedData.task().isCancelled()) {
                 removedData.task().cancel();
@@ -341,7 +341,7 @@ public class StalkerSpawnEvent implements PlayerDesyncEvent {
         final PacketContainer finalDestroyPacket = destroyPacket;
 
         try {
-            logger.info("Spawning Stalker (ID {}) for {} ({}) at {}", entityId, player.getName(), stalkerGameProfile.getName(), spawnLoc.toVector());
+            logger.debug("Spawning Stalker (ID {}) for {} ({}) at {}", entityId, player.getName(), stalkerGameProfile.getName(), spawnLoc.toVector());
 
 
             protocolManager.sendServerPacket(player, playerInfoAddPacket);
@@ -508,7 +508,7 @@ public class StalkerSpawnEvent implements PlayerDesyncEvent {
 
 
                                 if (angle <= STALKER_VIEW_ANGLE_THRESHOLD) {
-                                    logger.info("Stalker (ID {}) SEEN by player {}", entityId, nearbyPlayer.getName());
+                                    logger.debug("Stalker (ID {}) SEEN by player {}", entityId, nearbyPlayer.getName());
                                     seenByAny = true;
                                     seenTimestamp = System.currentTimeMillis();
 
@@ -661,7 +661,7 @@ public class StalkerSpawnEvent implements PlayerDesyncEvent {
 
                     potentialBase.setPitch(0);
                     potentialBase.setYaw(0);
-                    logger.info("Found suitable stalker spawn location after {} attempts: {}", attempts, potentialBase.toVector());
+                    logger.debug("Found suitable stalker spawn location after {} attempts: {}", attempts, potentialBase.toVector());
                     return potentialBase;
                 }
             }

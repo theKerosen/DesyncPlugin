@@ -142,7 +142,7 @@ public class VisualBlockInteractEvent implements PlayerDesyncEvent {
 
 
         EffectUtils.sendBlockChange(player, blockLocation, flickerBlockData, plugin);
-        logger.info("Triggered VisualBlockInteract for {}: Changed {} at {} clientside.",
+        logger.debug("Triggered VisualBlockInteract for {}: Changed {} at {} clientside.",
                 player.getName(), originalMaterial, blockLocation.toVector());
 
 

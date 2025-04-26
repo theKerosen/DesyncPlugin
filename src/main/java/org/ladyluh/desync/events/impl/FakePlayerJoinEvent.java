@@ -76,7 +76,7 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
         Logger logger = plugin.getPluginLogger();
         ProtocolManager protocolManager = plugin.getProtocolManager();
 
-        logger.info("Triggering FakePlayerJoinLeave ('{}') for {}", FAKE_PLAYER_NAME, player.getName());
+        logger.debug("Triggering FakePlayerJoinLeave ('{}') for {}", FAKE_PLAYER_NAME, player.getName());
 
         try {
 
@@ -91,7 +91,7 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
 
 
             protocolManager.sendServerPacket(player, addPlayerPacket);
-            logger.info("Sent PLAYER_INFO (ADD_PLAYER) packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, fakePlayerInstanceUUID, player.getName());
+            logger.debug("Sent PLAYER_INFO (ADD_PLAYER) packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, fakePlayerInstanceUUID, player.getName());
 
 
             String joinMessageText = FAKE_PLAYER_NAME + " joined the game";
@@ -102,7 +102,7 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
             joinMessagePacket.getBooleans().write(0, false);
 
             protocolManager.sendServerPacket(player, joinMessagePacket);
-            logger.info("Sent SYSTEM_CHAT join message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
+            logger.debug("Sent SYSTEM_CHAT join message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
 
 
             new BukkitRunnable() {
@@ -110,7 +110,7 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
                 public void run() {
 
                     if (!player.isOnline()) {
-                        logger.info("FakePlayerJoinLeave skipping remove sequence for {} - player offline.", player.getName());
+                        logger.debug("FakePlayerJoinLeave skipping remove sequence for {} - player offline.", player.getName());
                         return;
                     }
 
@@ -122,7 +122,7 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
 
 
                         protocolManager.sendServerPacket(player, removePlayerPacket);
-                        logger.info("Sent PLAYER_INFO_REMOVE packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, fakePlayerInstanceUUID, player.getName());
+                        logger.debug("Sent PLAYER_INFO_REMOVE packet for '{}' ({}) to {}", FAKE_PLAYER_NAME, fakePlayerInstanceUUID, player.getName());
 
 
                         new BukkitRunnable() {
@@ -140,7 +140,7 @@ public class FakePlayerJoinEvent implements PlayerDesyncEvent {
                                     leaveMessagePacket.getBooleans().write(0, false);
 
                                     protocolManager.sendServerPacket(player, leaveMessagePacket);
-                                    logger.info("Sent SYSTEM_CHAT leave message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
+                                    logger.debug("Sent SYSTEM_CHAT leave message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName());
 
                                 } catch (Exception e) {
                                     logger.error("Failed to send FakePlayerJoinLeave leave message packet for '{}' to {}", FAKE_PLAYER_NAME, player.getName(), e);

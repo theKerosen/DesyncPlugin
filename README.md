@@ -38,7 +38,7 @@ Events trigger randomly based on configurable chance and environmental factors l
 ## Requirements
 
 *   A Minecraft server running Spigot, Paper, or a compatible fork (Tested on Paper 1.21).
-*   [**ProtocolLib**](https://www.spigotmc.org/resources/protocollib.39/) (Required for packet manipulation). Ensure you are using a version compatible with your server version.
+*   [**ProtocolLib**](https://www.spigotmc.org/resources/protocollib.1997/) (Required for packet manipulation). Ensure you are using a version compatible with your server version.
 
 ## Installation
 
@@ -47,7 +47,7 @@ Events trigger randomly based on configurable chance and environmental factors l
 3.  Place both `.jar` files in your server's `plugins/` directory.
 4.  Restart your Minecraft server.
 
-## Configuration
+## Configuration (W.I.P)
 
 Desync uses a `config.yml` file located in the plugin's data folder (`plugins/Desync/`). This file allows you to customize various aspects of the plugin's behavior.
 

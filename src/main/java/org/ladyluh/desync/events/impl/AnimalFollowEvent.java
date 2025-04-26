@@ -68,7 +68,7 @@ public class AnimalFollowEvent implements PlayerDesyncEvent {
         List<FollowData> followsToCancel = activeFollowsByPlayer.remove(playerUUID);
 
         if (followsToCancel != null && !followsToCancel.isEmpty()) {
-            logger.info("Globally cancelling {} animal follow tasks for player {}", followsToCancel.size(), playerUUID);
+            logger.debug("Globally cancelling {} animal follow tasks for player {}", followsToCancel.size(), playerUUID);
             for (FollowData data : followsToCancel) {
 
 
@@ -234,7 +234,7 @@ public class AnimalFollowEvent implements PlayerDesyncEvent {
             return;
         }
 
-        logger.info("Triggering AnimalFollow for {} animals near {}", selectedAnimals.size(), player.getName());
+        logger.debug("Triggering AnimalFollow for {} animals near {}", selectedAnimals.size(), player.getName());
 
 
         List<FollowData> playerFollows = activeFollowsByPlayer.computeIfAbsent(player.getUniqueId(), k -> Collections.synchronizedList(new ArrayList<>()));

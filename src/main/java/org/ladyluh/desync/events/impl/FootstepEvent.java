@@ -145,7 +145,7 @@ public class FootstepEvent implements PlayerDesyncEvent {
 
         float pitch = 1.0f + (float) (random.nextDouble() * (pitchVariance * 2) - pitchVariance);
 
-        logger.info("Playing Single {} for {} at {}, vol={}, pitch={}",
+        logger.debug("Playing Single {} for {} at {}, vol={}, pitch={}",
                 soundTypeName, player.getName(), soundLocation.toVector(), volume, pitch);
 
 
@@ -221,7 +221,7 @@ public class FootstepEvent implements PlayerDesyncEvent {
         double offsetY = random.nextDouble() * 0.5 - 0.25;
         final Location sequenceBaseLocation = playerLoc.clone().add(offsetX, offsetY, offsetZ);
 
-        logger.info("Triggering {} ({} steps) for {} near {}",
+        logger.debug("Triggering {} ({} steps) for {} near {}",
                 sequenceTypeName, numSteps, player.getName(), sequenceBaseLocation.toVector());
 
 

@@ -209,7 +209,7 @@ public class MisplacedSoundEvent implements PlayerDesyncEvent {
         Location soundLocation = loc.clone().add(offsetX, offsetY, offsetZ);
 
 
-        logger.info("Triggering MisplacedSound (Context: {}, Sound Pool: {}) -> Sound {} for {} at {}, vol={}, pitch={}",
+        logger.debug("Triggering MisplacedSound (Context: {}, Sound Pool: {}) -> Sound {} for {} at {}, vol={}, pitch={}",
                 contextDescription, soundPoolDescription, soundToPlay.name(), player.getName(), soundLocation.toVector(), finalVolume, pitch);
 
 

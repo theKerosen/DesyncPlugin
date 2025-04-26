@@ -97,7 +97,7 @@ public class PersistentParticleEvent implements PlayerDesyncEvent {
         Particle particleType = ELIGIBLE_PARTICLE_TYPES.get(random.nextInt(ELIGIBLE_PARTICLE_TYPES.size()));
 
 
-        logger.info("Triggering PersistentParticle for {} at {} (Type: {})",
+        logger.debug("Triggering PersistentParticle for {} at {} (Type: {})",
                 player.getName(), effectLocation.toVector(), particleType.name());
 
 

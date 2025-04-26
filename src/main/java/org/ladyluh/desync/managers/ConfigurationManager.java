@@ -48,7 +48,7 @@ public class ConfigurationManager {
         plugin.saveDefaultConfig();
         config = plugin.getConfig();
 
-        logger.info("Loading configuration...");
+        logger.debug("Loading configuration...");
 
         try {
 
@@ -78,7 +78,7 @@ public class ConfigurationManager {
             defaultGlobalCooldownMs = Math.max(0L, defaultGlobalCooldownMs);
 
 
-            logger.info("Configuration loaded successfully.");
+            logger.debug("Configuration loaded successfully.");
         } catch (Exception e) {
             logger.error("Failed to load configuration! Using default settings.", e);
 
@@ -91,7 +91,7 @@ public class ConfigurationManager {
     public void reloadConfig() {
         plugin.reloadConfig();
         loadConfig();
-        logger.info("Configuration reloaded.");
+        logger.debug("Configuration reloaded.");
 
         plugin.getEventScheduler().reloadSettings();
         plugin.getCooldownManager().reloadSettings();

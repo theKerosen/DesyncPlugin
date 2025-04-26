@@ -121,7 +121,7 @@ public class InventoryShiftEvent implements PlayerDesyncEvent {
         List<Integer> finalSlotsToUpdate = slotsToUpdate.subList(0, actualUpdatesCount);
 
 
-        logger.info("Triggering InventoryShift for {} (Updating {} slots clientside)", player.getName(), finalSlotsToUpdate.size());
+        logger.debug("Triggering InventoryShift for {} (Updating {} slots clientside)", player.getName(), finalSlotsToUpdate.size());
 
 
         try {

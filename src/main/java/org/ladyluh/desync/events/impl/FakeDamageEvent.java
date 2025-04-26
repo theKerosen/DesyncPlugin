@@ -67,7 +67,7 @@ public class FakeDamageEvent implements PlayerDesyncEvent {
             else playVisual = true;
         }
 
-        logger.info("Triggering FakeDamage for {} (Sound: {}, Visual: {})", player.getName(), playSound, playVisual);
+        logger.debug("Triggering FakeDamage for {} (Sound: {}, Visual: {})", player.getName(), playSound, playVisual);
 
         try {
             if (playVisual) {

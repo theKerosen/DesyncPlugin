@@ -69,7 +69,7 @@ public class EventScheduler implements Runnable {
 
 
         if (task != null && !task.isCancelled()) {
-            plugin.getPluginLogger().info("Scheduler interval changed, restarting task.");
+            plugin.getPluginLogger().debug("Scheduler interval changed, restarting task.");
             task.cancel();
             start();
         }
@@ -89,7 +89,7 @@ public class EventScheduler implements Runnable {
 
 
         task = Bukkit.getScheduler().runTaskTimer(plugin, this, schedulerIntervalTicks, schedulerIntervalTicks);
-        plugin.getPluginLogger().info("EventScheduler started (running every {} ticks).", schedulerIntervalTicks);
+        plugin.getPluginLogger().debug("EventScheduler started (running every {} ticks).", schedulerIntervalTicks);
     }
 
     /**
@@ -99,7 +99,7 @@ public class EventScheduler implements Runnable {
         if (task != null) {
             task.cancel();
             task = null;
-            plugin.getPluginLogger().info("EventScheduler stopped.");
+            plugin.getPluginLogger().debug("EventScheduler stopped.");
         }
     }
 

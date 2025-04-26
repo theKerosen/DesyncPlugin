@@ -601,7 +601,7 @@ public class VisualStructureEvent implements PlayerDesyncEvent {
             return;
         }
 
-        logger.info("Triggering VisualStructure for {} near {}", player.getName(), placementBase.toVector());
+        logger.debug("Triggering VisualStructure for {} near {}", player.getName(), placementBase.toVector());
 
 
         Map<Location, BlockData> originalBlockData = new HashMap<>();

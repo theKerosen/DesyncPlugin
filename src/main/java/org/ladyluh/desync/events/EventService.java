@@ -60,7 +60,7 @@ public class EventService {
      * Registers all the default event types provided by the plugin.
      */
     private void registerDefaultEvents() {
-        logger.info("Registering default desync event types...");
+        logger.debug("Registering default desync event types...");
         registerEvent(new PeripheralParticleEvent());
         registerEvent(new FootstepEvent());
         registerEvent(new AnimalStareEvent());
@@ -80,8 +80,9 @@ public class EventService {
         registerEvent(new PersistentParticleEvent());
         registerEvent(new BlockVanishEvent());
         registerEvent(new FakePlayerJoinEvent());
+        registerEvent(new NullSpawnEvent());
 
-        logger.info("Finished registering {} event types.", registeredEvents.size());
+        logger.debug("Finished registering {} event types.", registeredEvents.size());
     }
 
     /**
@@ -181,7 +182,7 @@ public class EventService {
 
 
         try {
-            logger.info("Triggering event '{}' for {}", event.getKey(), player.getName());
+            logger.debug("Triggering event '{}' for {}", event.getKey(), player.getName());
 
             event.trigger(player, plugin);
 
@@ -223,7 +224,7 @@ public class EventService {
      * Cancels all active tasks associated with events (like stare tasks).
      */
     public void cleanup() {
-        logger.info("Cleaning up EventService resources...");
+        logger.debug("Cleaning up EventService resources...");
 
 
         new ArrayList<>(AnimalStareEvent.activeStaresByPlayer.keySet()).forEach(playerUUID -> AnimalStareEvent.cancelAllPlayerStares(playerUUID, logger));

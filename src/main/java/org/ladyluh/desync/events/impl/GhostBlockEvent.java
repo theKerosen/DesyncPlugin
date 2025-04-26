@@ -163,7 +163,7 @@ public class GhostBlockEvent implements PlayerDesyncEvent {
         float pitch = 1.0f + (float) (random.nextDouble() * (pitchVariance * 2) - pitchVariance);
 
 
-        logger.info("Triggering GhostBlockInteraction for {}: Sound {} near block {} at {}",
+        logger.debug("Triggering GhostBlockInteraction for {}: Sound {} near block {} at {}",
                 player.getName(), soundToPlay.name(), blockMaterial.name(), targetBlock.getLocation().toVector());
 
 
