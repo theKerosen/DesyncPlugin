@@ -27,6 +27,7 @@ Desync introduces a variety of subtle, paranoia-inducing effects:
     *   **Animal Stare:** Nearby passive animals briefly turn their heads to stare intently at the player. Stops if the player looks back.
     *   **Animal Follow:** Nearby passive animals appear to glide towards the player when the player is not looking at them. Stops when looked at or after a duration. (Note: This is a clientside visual effect, animals don't actually pathfind).
     *   **Distant Stalker:** A fake player entity briefly appears far away, facing the player, and despawns if looked at.
+    *   **The Glimpse:** An entity that shows up behind your back, it doesn't like to be stared at.
 *   **UI Glitches:**
     *   **Action Bar Message:** A strange, short message appears briefly above the player's hotbar.
     *   **Fake Advancement:** A fake achievement/advancement pop-up appears briefly.
