@@ -105,15 +105,6 @@ All administrative commands start with `/desync` or `/ds`. Permissions are requi
 
 By default, operators (`op`) have all permissions. You can manage permissions using a plugin like LuckPerms.
 
-## Building from Source
-
-If you wish to build the plugin yourself:
-
-1.  Clone this repository: `git clone https://github.com/LadyLuh/Desync.git`
-2.  Navigate into the cloned directory: `cd Desync`
-3.  Build the project using Maven: `mvn clean package`
-4.  The compiled JAR file (`Desync-X.Y.Z.jar`) will be found in the `target/` directory.
-
 ## Contributing
 
 Contributions are welcome! If you have ideas for new subtle desync events, improvements, or bug fixes, feel free to open an issue or submit a pull request on the [GitHub repository](https://github.com/LadyLuh/Desync).
