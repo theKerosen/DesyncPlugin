@@ -43,7 +43,7 @@ Events trigger randomly based on configurable chance and environmental factors l
 
 ## Installation
 
-1.  Download the latest `Desync-X.Y.Z.jar` from the [releases page](link_to_releases_page).
+1.  Download the latest `Desync-X.Y.Z.jar` from the [releases page](https://github.com/theKerosen/DesyncPlugin/releases).
 2.  Download the compatible `ProtocolLib-X.Y.Z.jar` for your server version from the [ProtocolLib releases page](https://ci.dmulloy2.net/job/ProtocolLib/).
 3.  Place both `.jar` files in your server's `plugins/` directory.
 4.  Restart your Minecraft server.
