@@ -107,7 +107,7 @@ By default, operators (`op`) have all permissions. You can manage permissions us
 
 ## Contributing
 
-Contributions are welcome! If you have ideas for new subtle desync events, improvements, or bug fixes, feel free to open an issue or submit a pull request on the [GitHub repository](https://github.com/LadyLuh/Desync).
+Contributions are welcome! If you have ideas for new subtle desync events, improvements, or bug fixes, feel free to open an issue or submit a pull request on the GitHub repository.
 
 When adding new events, please aim for effects that:
 *   Are primarily clientside (using ProtocolLib).
@@ -118,7 +118,7 @@ When adding new events, please aim for effects that:
 ## Credits
 
 *   Inspired by the "Broken Script", "Herobrine Mod", "Herobrine AI" and similar paranoia-inducing concepts
-*   Uses [ProtocolLib](https://www.spigotmc.org/resources/protocollib.39/) by dmulloy2.
+*   Uses ProtocolLib by dmulloy2.
 *   Developed by LadyLuh.
 
 ## License
